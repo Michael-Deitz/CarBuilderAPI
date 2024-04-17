@@ -40,6 +40,15 @@ public class Order
     public Technology Technology { get; set; }
     public Interior Interior { get; set; }
     public PaintColor PaintColor { get; set; }
-    public decimal TotalCost => PaintColor.Price + Interior.Price + Technology.Price + Wheel.Price;
+    public decimal TotalCost
+    {
+        get
+        {
+            decimal total = 0;
+            total += Wheel.Price + Technology.Price + PaintColor.Price + Interior.Price;
+            return total;
+        }
+    }
+    public bool IsFullFilled { get; set; }
 }
 

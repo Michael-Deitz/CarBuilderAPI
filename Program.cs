@@ -1,4 +1,5 @@
 using CarBuilder.Models;
+using CarBuilder.Models.DTOs;
 
 List <PaintColor> paintColors = new List<PaintColor> ()
 {
@@ -103,22 +104,57 @@ app.MapGet("/wheels", () =>
     });
 });
 
-app.MapGet("/orders", () =>
+app.MapGet("/orders", (int? paintId) =>
 {
-    
-    return orders.Select(order => new Order
+    foreach (Order order in orders)
     {
-        Id = order.Id,
-        PaintId = order.PaintId,
-        InteriorId = order.InteriorId,
-        TechnologyId = order.TechnologyId,
-        WheelId = order.WheelId,
-        Timestamp = order.Timestamp,
-        PaintColor = paintColors.FirstOrDefault(p => p.Id == order.PaintId),
-        Interior = interiors.FirstOrDefault(i => i.Id == order.InteriorId),
-        Technology = technologies.FirstOrDefault(t => t.Id == order.TechnologyId),
-        Wheel = wheels.FirstOrDefault(w => w.Id == order.WheelId)
-    });
+        order.Wheel = wheels.First(w => w.Id == order.WheelId);
+        order.Technology = technologies.First(w => w.Id == order.TechnologyId);
+        order.PaintColor = paintColors.First(w => w.Id == order.PaintId);
+        order.Interior = interiors.First(w => w.Id == order.InteriorId);
+    }
+
+    List<Order> filteredOrders = orders.Where(o => !o.IsFullFilled).ToList();
+
+    // Now, check for the paintId property to see if we should filter by that as well
+    if (paintId != null)
+    {
+        filteredOrders = filteredOrders.Where(order => order.PaintId == paintId).ToList();
+    }
+
+    return filteredOrders.Select(o => new OrderDTO
+    {
+        Id = o.Id,
+        Timestamp = o.Timestamp,
+        TechnologyId = o.TechnologyId,
+        Technology = new TechnologyDTO
+        {
+            Id = o.Technology.Id,
+            Package = o.Technology.Package,
+            Price = o.Technology.Price
+        },
+        WheelId = o.WheelId,
+        Wheel = new WheelsDTO
+        {
+            Id = o.Wheel.Id,
+            Style = o.Wheel.Style,
+            Price = o.Wheel.Price
+        },
+        InteriorId = o.InteriorId,
+        Interior = new InteriorDTO
+        {
+            Id = o.Interior.Id,
+            Material = o.Interior.Material,
+            Price = o.Interior.Price
+        },
+        PaintId = o.PaintId,
+        PaintColor = new PaintColorDTO
+        {
+            Id = o.PaintColor.Id,
+            Color = o.PaintColor.Color,
+            Price = o.PaintColor.Price
+        },
+    }).ToList();
 });
 
 app.MapGet("/orders/{id}", (int id) => 
@@ -218,6 +254,20 @@ app.MapPost("/orders", ( Order order) =>
         
     });
 });
+
+app.MapPost("/orders/{Id}/fulfill", (int Id) => 
+{
+    Order orderToFullFill = orders.FirstOrDefault(order => order.Id == Id);
+
+    
+
+    orderToFullFill.IsFullFilled = true;
+
+
+    return Results.Ok();
+});
+
+
 app.Run();
 
 

@@ -1,4 +1,4 @@
-namespace CarBuilder.Models;
+namespace CarBuilder.Models.DTOs;
 
 public class PaintColorDTO
 {
@@ -40,6 +40,14 @@ public class OrderDTO
     public TechnologyDTO Technology { get; set; }
     public InteriorDTO Interior { get; set; }
     public PaintColorDTO PaintColor { get; set; }
-     public decimal TotalCost => PaintColor.Price + Interior.Price + Technology.Price + Wheel.Price;
+     public decimal TotalCost
+    {
+        get
+        {
+            decimal total = 0;
+            total += Wheel.Price + Technology.Price + PaintColor.Price + Interior.Price;
+            return total;
+        }
+    }
     
 }
